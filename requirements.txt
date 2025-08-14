@@ -1,0 +1,14 @@
+pandas
+numpy
+scikit-learn
+xgboost
+lightgbm
+scipy
+pymc
+duckdb
+sqlite-utils
+requests
+geopy
+matplotlib
+plotly
+streamlit
