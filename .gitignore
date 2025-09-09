@@ -4,3 +4,4 @@ __pycache__/
 data/raw/*
 data/clean/*
 .ipynb_checkpoints
+leafs_predictor/notes.txt
