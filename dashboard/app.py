@@ -3,6 +3,8 @@ import pandas as pd
 import streamlit as st
 from pathlib import Path
 import altair as alt
+import re
+from pathlib import Path
 
 
 #constants
@@ -30,8 +32,8 @@ NAME_TO_ABBR = {
 HOME_EDGE = 5.0          
 B2B_PENALTY = 10.0        
 REST_PTS_PER_DAY = 3.0    
-ELO_SCALE_DEN = 600.0     # larger => flatter probabilities
-ALPHA_ELO = 0.65          # 1.0 => pure Elo, 0.0 => coin flip
+ELO_SCALE_DEN = 600.0  
+ALPHA_ELO = 0.75          
 
 
 def allocate_otl(loss_idx: np.ndarray, probs: np.ndarray, expected_share: float) -> set:
@@ -55,7 +57,6 @@ def load_leafs_schedule_from_csv(csv_path: str, team_abbr: str = TEAM,
             raise KeyError(f"Missing column '{col}'. Found: {list(df.columns)}")
     df = df.rename(columns={date_col: "date", home_col: "home_team", away_col: "away_team"})
 
-    # Robust date parsing: DD/MM/YYYY preferred, ISO fallback
     s = df["date"].astype(str).str.strip()
     parsed = pd.to_datetime(s, format="%d/%m/%Y", errors="coerce")
     na = parsed.isna()
@@ -63,20 +64,16 @@ def load_leafs_schedule_from_csv(csv_path: str, team_abbr: str = TEAM,
         parsed.loc[na] = pd.to_datetime(s[na], errors="coerce")
     df["date"] = parsed
 
-    # Leafs perspective
     df["home"] = (df["home_team"] == team_abbr).astype(int)
     df["opponent"] = np.where(df["home"] == 1, df["away_team"], df["home_team"])
 
-    # Vectorized rest features
     df = df.sort_values("date").reset_index(drop=True)
     d_days = df["date"].diff().dt.days.fillna(2).clip(lower=0).astype(int)
     df["rest_days"] = d_days
     df["back_to_back"] = (d_days == 1).astype(int)
 
-    # Placeholder until opponent rest is computed
     df["rest_diff"] = 0
 
-    # Keep nice order; pass through helpful refs if present
     order = ["date","home_team","away_team","opponent","home","back_to_back","rest_days","rest_diff"]
     for opt in ["Location","Result","Match Number","Round Number"]:
         if opt in df.columns: order.append(opt)
@@ -116,7 +113,7 @@ def build_elo_map(teams_csv: str, save_pct_csv: str) -> tuple[dict, pd.DataFrame
 
     ev_z = z(ev["net_xG60"])
     pp_z = z(pp["xGF60"])
-    pk_z = z(-pk["xGA60"])  # lower xGA60 is better
+    pk_z = z(-pk["xGA60"]) 
 
     sv_df = pd.read_csv(save_pct_csv).rename(columns={"team":"team_name","savePct":"savePct"})
     sv_df["team"] = sv_df["team_name"].map(NAME_TO_ABBR)
@@ -125,7 +122,7 @@ def build_elo_map(teams_csv: str, save_pct_csv: str) -> tuple[dict, pd.DataFrame
     sv["savePct"] = sv["savePct"].fillna(sv["savePct"].mean())
     sv_z = z(sv["savePct"])
 
-    W_EV, W_PP, W_PK, W_SV = 0.60, 0.20, 0.15, 0.05
+    W_EV, W_PP, W_PK, W_SV = 0.55, 0.30, 0.15, 0.10 
     comp = all_teams.copy()
     comp["ev_z"] = ev_z.values
     comp["pp_z"] = pp_z.values
@@ -150,21 +147,83 @@ def attach_elo_to_schedule(schedule_df: pd.DataFrame, elo_map: dict, team_abbr: 
     extra = [c for c in ["Location","Result","Match Number","Round Number"] if c in sch.columns]
     return sch[cols + extra]
 
+def compute_offseason_bump_for_team_paths(transactions_csv: str,
+                                          skaters_csv: str,
+                                          team_abbr: str = "TOR",
+                                          elo_per_std: float = 60.0,
+                                          min_gp: int = 10) -> tuple[int, pd.DataFrame]:
+
+    import numpy as np
+    import pandas as pd
+
+    def _norm_name(s):
+        s = str(s or "")
+        s = re.sub(r"[^a-zA-Z\s\-.']", "", s).lower().strip()
+        return re.sub(r"\s+", " ", s)
+
+    tx = pd.read_csv(transactions_csv).copy()
+    sk = pd.read_csv(skaters_csv).copy()
+
+    tx["_player_norm"] = tx["player"].map(_norm_name)
+    sk["_player_norm"] = sk["name"].map(_norm_name)
+
+    if "season" in sk.columns:
+        sk["season"] = pd.to_numeric(sk["season"], errors="coerce")
+        sk = sk.loc[sk["season"] == sk["season"].max()].copy()
+
+    if "situation" in sk.columns:
+        sk_all = sk.loc[sk["situation"].astype(str).str.lower() == "all"]
+        if not sk_all.empty:
+            sk = sk_all
+
+    gs = pd.to_numeric(sk.get("gameScore"), errors="coerce").fillna(0.0)
+    gp = pd.to_numeric(sk.get("games_played"), errors="coerce").fillna(0.0)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        gs_per_gp = np.where(gp > 0, gs / gp, 0.0)
+    sk["gs_per_gp"] = gs_per_gp
+
+    if "games_played" in sk.columns:
+        sk = sk.loc[pd.to_numeric(sk["games_played"], errors="coerce").fillna(0) >= min_gp].copy()
+
+    std = float(pd.Series(sk["gs_per_gp"]).std(ddof=0)) or 1.0
+
+    m = tx.merge(sk[["_player_norm","gs_per_gp"]], on="_player_norm", how="left")
+
+    sign = np.where(m["team_to"] == team_abbr, +1,
+            np.where(m["team_from"] == team_abbr, -1, 0))
+    stat_vals = pd.to_numeric(m["gs_per_gp"], errors="coerce").fillna(0.0)
+    contribution = sign * stat_vals
+    elo_bump = elo_per_std * (contribution.sum() / std)
+    elo_bump_int = int(round(elo_bump))
+
+    details = m.assign(gs_per_gp=stat_vals, contribution=contribution)
+    return elo_bump_int, details[["player","team_from","team_to","gs_per_gp","contribution"]]
+
+def pick_median_sim(sims_df: pd.DataFrame) -> pd.Series:
+
+    df = sims_df[["sim", "points", "record_W-L-OTL"]].copy()
+    if df.empty:
+        raise ValueError("sims_df is empty — run with n_sims > 0.")
+
+    # Stable sort by points, then trim the bottom fraction
+    df_sorted = df.sort_values("points", kind="mergesort")
+    n = len(df_sorted)
+    k = int(np.floor(n * 0.1))
+    kept = df_sorted.iloc[k:] if k < n else df_sorted
+    if kept.empty:
+        kept = df_sorted  # safety for tiny n
+
+    # Median of the kept set, then choose closest (tie → smaller sim id)
+    med = kept["points"].median()
+    kept = kept.assign(dev=(kept["points"] - med).abs())
+    return kept.sort_values(["dev", "sim"], ascending=[True, True]).iloc[0]
+
 def predict_schedule(sch_df: pd.DataFrame, backtest_csv: str,
-                     n_sims: int = 0, rng_seed: int = 42,
+                     n_sims: int = 0,  rng_seed: int | None = None,
                      use_elo_noise: bool = False, elo_noise_sd: float = 35.0):
-    """
-    Unified predictor.
-    n_sims == 0 -> deterministic predictions with OTL allocation (closest-to-0.5).
-    n_sims  > 0 -> simulations; display-case per game via MEAN wins + OTL allocated
-                   among display losses to match backtest OTL share.
-    Returns:
-      if n_sims == 0: (preds_df, None, summary)
-      else:           (display_df, sims_totals_df, summary)
-    """
+
     sch = sch_df.copy().reset_index(drop=True)
 
-    # ---------- base Elo prob (deterministic) ----------
     diff_base = (
         (sch["elo_for"].astype(float) - sch["elo_against"].astype(float))
         + HOME_EDGE * sch["home"].astype(int)
@@ -175,13 +234,10 @@ def predict_schedule(sch_df: pd.DataFrame, backtest_csv: str,
     p_base = ALPHA_ELO * p_elo + (1.0 - ALPHA_ELO) * 0.5
     p_base = np.clip(p_base, 1e-6, 1 - 1e-6)
 
-    # ---------- robust OTL share from backtest (SO counts as OTL) ----------
     bt = pd.read_csv(backtest_csv)
 
-    # normalize result
     res = bt["result"].astype(str).str.strip().str.upper()
 
-    # normalize extra_time and treat any non-"no" as beyond regulation
     ext = bt.get("extra_time", "no")
     ext = pd.Series(ext).fillna("no").astype(str).str.strip().str.lower()
     ext = ext.replace({
@@ -204,14 +260,12 @@ def predict_schedule(sch_df: pd.DataFrame, backtest_csv: str,
                              "back_to_back","rest_days","rest_diff","elo_for","elo_against"]
                  if c in sch.columns]
 
-    # ------------------ deterministic path ------------------
     if n_sims == 0:
         preds = sch[base_cols].copy()
         preds["win_prob"] = np.round(p_base, 3)
         pred_win = (p_base >= 0.5).astype(int)
         loss_idx = np.where(pred_win == 0)[0]
 
-        # allocate OTLs among predicted losses by backtest share
         otl_idx = allocate_otl(loss_idx, p_base, p_otl) if len(loss_idx) else set()
 
         res_cat = np.array(["W"] * len(preds), dtype=object)
@@ -234,8 +288,7 @@ def predict_schedule(sch_df: pd.DataFrame, backtest_csv: str,
         }
         return preds, None, summary
 
-    # ------------------ simulation path ------------------
-    rng = np.random.default_rng(rng_seed)
+    rng = np.random.default_rng(None if rng_seed is None else rng_seed)  # <- None => fresh entropy
     n_games = len(sch)
     wins_sims = np.zeros((n_sims, n_games), dtype=int)
     otl_sims  = np.zeros((n_sims, n_games), dtype=int)
@@ -264,6 +317,7 @@ def predict_schedule(sch_df: pd.DataFrame, backtest_csv: str,
     display_result = np.full(n_games, "L", dtype=object)
     display_result[win_rate >= 0.5] = "W"
 
+#allocate OT
     remaining_losses = np.where(win_rate < 0.5)[0]
     otl_pick = allocate_otl(remaining_losses, p_base, p_otl) if len(remaining_losses) else set()
     if otl_pick:
@@ -303,21 +357,21 @@ def predict_schedule(sch_df: pd.DataFrame, backtest_csv: str,
     return display_df, sims_totals, summary
 
 
-# =========================
 # Streamlit UI
-# =========================
 st.set_page_config(page_title="Leafs Season Predictor", layout="wide")
 if LOGO_PATH.exists():
     st.image(str(LOGO_PATH), width=120)
 else:
     st.text("nope")
 st.title("Toronto Maple Leafs — 2025/2026 Season Prediction Dashboard")
-# Default paths (relative to repo root). Adjust in sidebar as needed.
-BASE = Path(__file__).resolve().parent.parent  # project root = one level up from /dashboard
+# Default paths 
+BASE = Path(__file__).resolve().parent.parent 
 default_schedule = str(BASE / "data" / "raw" / "schedule.csv")
 default_teams    = str(BASE / "data" / "raw" / "teams.csv")
 default_savepct  = str(BASE / "data" / "clean" / "team_save_percentages.csv")
 default_backtest = str(BASE / "data" / "raw" / "backtest.csv")
+txn_path     = str(BASE / "data" / "clean" / "transactions.csv")
+skaters_path = str(BASE / "data" / "raw" / "skaters.csv")
 
 with st.sidebar:
     st.header("Data paths")
@@ -328,21 +382,20 @@ with st.sidebar:
 
     st.header("Simulation")
     n_sims = st.number_input("Number of simulations", min_value=0, max_value=5000, value=100, step=50)
-    use_noise = st.checkbox("Add Elo noise per sim?", value=False)
-    noise_sd  = st.number_input("Elo noise SD", min_value=0.0, value=35.0, step=5.0)
+    fresh_seed = st.checkbox("Fresh random seed each run", value=True) 
+    seed_value = st.number_input("Fixed seed (used only if above is OFF)", min_value=0, value=7, step=1)
+    use_noise = st.checkbox("Add Elo Noise?", value=False)
+    noise_sd  = st.number_input("Elo Noise SD", min_value=0.0, value=35.0, step=5.0)
 
     st.header("Elo Adjustments:")
     home_edge = st.number_input("Home Bonus:", value=float(HOME_EDGE), step=1.0)
     b2b_pen   = st.number_input("Back-to-back Penalty", value=float(B2B_PENALTY), step=1.0)
     rest_pts  = st.number_input("Rest Day Bonus (Per Day)", value=float(REST_PTS_PER_DAY), step=0.5)
-    elo_den   = 600.00
-    alpha_elo = st.slider("ALPHA_ELO (weight on Elo)", min_value=0.0, max_value=1.0, value=float(ALPHA_ELO), step=0.05)
+    alpha_elo = st.slider("Elo Weight (0.75 Recommended)", min_value=0.0, max_value=1.0, value=float(ALPHA_ELO), step=0.05)
 
-# update global knobs from UI (simple approach)
 HOME_EDGE = home_edge
 B2B_PENALTY = b2b_pen
 REST_PTS_PER_DAY = rest_pts
-ELO_SCALE_DEN = elo_den
 ALPHA_ELO = alpha_elo
 
 # Run
@@ -351,38 +404,53 @@ if run:
     try:
         schedule_df = load_leafs_schedule_from_csv(schedule_csv)
         elo_map, teams_elos_df = build_elo_map(teams_csv, savepct_csv)
+        try:
+            if Path(txn_path).exists() and Path(skaters_path).exists():
+                bump, _bump_details = compute_offseason_bump_for_team_paths(
+                    transactions_csv=txn_path,
+                    skaters_csv=skaters_path,
+                    team_abbr="TOR",
+                    elo_per_std=60.0,  
+                    min_gp=10
+                )
+                elo_map["TOR"] = float(elo_map.get("TOR", 1500.0)) + float(bump)
+                try:
+                    teams_elos_df.loc[teams_elos_df["team"] == "TOR", "elo"] = elo_map["TOR"]
+                except Exception:
+                    pass
+        except Exception as e:
+            pass
         sch_with_elos = attach_elo_to_schedule(schedule_df, elo_map, TEAM)
+        seed_arg = None if fresh_seed else int(seed_value)
 
         results_df, sims_df, summary = predict_schedule(
             sch_df=sch_with_elos,
             backtest_csv=backtest_csv,
             n_sims=int(n_sims),
-            rng_seed=7,
+            rng_seed=seed_arg,   
             use_elo_noise=bool(use_noise),
             elo_noise_sd=float(noise_sd),
         )
+        c1,  c3 = st.columns([2,1])
 
-        c1, c2, c3 = st.columns([2, 1, 1])
-
+        median_row = pick_median_sim(sims_df)
+        st.subheader("Overall Prediction")
+        c_med1, c_med2 = st.columns(2)
+        with c_med1:
+            st.metric("Record (W-L-OTL)", median_row["record_W-L-OTL"])
+        with c_med2:
+            st.metric("Points", int(median_row["points"]))
         with c1:
-            st.subheader("Per-game predictions")
+            st.subheader("Per-game Predictions")
             st.dataframe(results_df, use_container_width=True)
 
-        with c2:
-            st.subheader("Summary")
-            if summary.get("mode") == "deterministic":
-                st.metric("Predicted Record (W-L-OTL)", summary["pred_record_W-L-OTL"])
-                st.metric("Predicted Points", summary["pred_points"])
-                st.write(f"Avg win prob: {summary['avg_win_prob']:.3f}")
-            else:
-                st.metric("Projected Record (W-L-OTL)", summary["display_record_W-L-OTL"])
-                st.metric("Projected Number of Points", summary["display_points"])
+
 
         with c3:
             if sims_df is not None and len(sims_df):
-                st.subheader("Points distribution")
 
-                # Points -> frequency
+                st.subheader("Points Distribution Across Simulations")
+
                 counts = sims_df["points"].value_counts().sort_index()
                 hist_df = counts.reset_index()
                 hist_df.columns = ["points", "simulations"]
@@ -414,6 +482,13 @@ if run:
                 file_name="simulations.csv",
                 mime="text/csv",
             )
+
+        st.download_button(
+            "Download Team Elos CSV",
+            data=teams_elos_df.to_csv(index=False),
+            file_name="teams_elos.csv",
+            mime="text/csv",
+        )
 
     except Exception as e:
         st.error(f"Error: {e}")
