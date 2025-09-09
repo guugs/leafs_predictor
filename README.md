@@ -58,3 +58,4 @@ Currently, here are features that I would like to add:
 - Further backtesting on older seasons schedules (the problem being that it requires a new elo for each team, each season due to roster changes)
 - Increased emphasis on player potential (i.e. younger teams will probably surpass previous expectations)
 - More statistics factored into elo (hits, blocks, possession time etc.)
+- Possibly shifting the project to a ML/Logistic Regression Model (This would most likely be a 2.0 version)
