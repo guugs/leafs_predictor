@@ -2,6 +2,8 @@
 
 This is a tool to predict the outcome of the upcoming 2025/26 season for **your Toronto Maple Leafs!**
 
+!(https://github.com/guugs/leafs_predictor/images/dashboard demo.gif)
+
 ## The Basics 📕
 
 This tool uses an elo-style model to predict outcomes across multiple simulations. Each NHL team has been assigned an Elo-style rating (more on that later). This elo-rating represents their skill-level relative to the rest of the league.
