@@ -20,6 +20,8 @@ What goes into each elo rating (at a glance):
 - Goaltending — team save percentage (SV%)
   - For this one in particular, I went for team percentage as a team's starter may not always be playing
 
+> P.S. If you're thinking "what the heck are expected goals?". You can read all about it [here](https://insidetherink.com/inside-the-stats-expected-goals/)
+
 ### Game-by-Game Basis
 
 - Home ice: +HOME_EDGE Elo to the home team (default +5)
