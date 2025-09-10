@@ -1,0 +1,83 @@
+GP,Date,is_away,Opponent,GF,GA,result,extra_time,W,L,OL,Streak,Att.,LOG
+1,2024-10-09,1,Montreal Canadiens,0,1,L,no,0,1,0,L 1,21105,2:18
+2,2024-10-10,1,New Jersey Devils,4,2,W,no,1,1,0,W 1,16764,2:24
+3,2024-10-12,0,Pittsburgh Penguins,4,2,W,no,2,1,0,W 2,18934,2:21
+4,2024-10-16,0,Los Angeles Kings,6,2,W,no,3,1,0,W 3,18852,2:29
+5,2024-10-19,0,New York Rangers,1,4,L,no,3,2,0,L 1,18988,2:24
+6,2024-10-21,0,Tampa Bay Lightning,5,2,W,no,4,2,0,W 1,18356,2:29
+7,2024-10-22,1,Columbus Blue Jackets,2,6,L,no,4,3,0,L 1,14852,2:33
+8,2024-10-24,0,St. Louis Blues,1,5,L,no,4,4,0,L 2,18414,2:29
+9,2024-10-26,1,Boston Bruins,3,4,L,OT,4,4,1,L 3,17850,2:38
+10,2024-10-28,1,Winnipeg Jets,6,4,W,no,5,4,1,W 1,15225,2:29
+11,2024-10-31,0,Seattle Kraken,4,1,W,no,6,4,1,W 2,18181,2:23
+12,2024-11-02,1,St. Louis Blues,2,4,L,no,6,5,1,L 1,18096,2:25
+13,2024-11-03,1,Minnesota Wild,1,2,L,OT,6,5,2,L 2,18096,2:31
+14,2024-11-05,0,Boston Bruins,4,0,W,no,7,5,2,W 1,18730,2:35
+15,2024-11-08,0,Detroit Red Wings,3,1,W,no,8,5,2,W 2,19152,2:27
+16,2024-11-09,0,Montreal Canadiens,4,1,W,no,9,5,2,W 3,19277,2:32
+17,2024-11-12,0,Ottawa Senators,0,3,L,no,9,6,2,L 1,18648,2:33
+18,2024-11-13,1,Washington Capitals,4,3,W,OT,10,6,2,W 1,18573,2:49
+19,2024-11-16,0,Edmonton Oilers,4,3,W,OT,11,6,2,W 2,19301,2:25
+20,2024-11-20,0,Vegas Golden Knights,3,0,W,no,12,6,2,W 3,18853,2:32
+21,2024-11-24,0,Utah Hockey Club,3,2,W,no,13,6,2,W 4,18641,2:32
+22,2024-11-27,1,Florida Panthers,1,5,L,no,13,7,2,L 1,18563,2:30
+23,2024-11-30,1,Tampa Bay Lightning,5,3,W,no,14,7,2,W 1,19092,2:35
+24,2024-12-02,0,Chicago Blackhawks,4,1,W,no,15,7,2,W 2,18557,2:16
+25,2024-12-04,0,Nashville Predators,3,2,W,no,16,7,2,W 3,18611,2:26
+26,2024-12-06,0,Washington Capitals,1,3,L,no,16,8,2,L 1,18723,2:28
+27,2024-12-07,1,Pittsburgh Penguins,2,5,L,no,16,9,2,L 2,17290,2:24
+28,2024-12-10,1,New Jersey Devils,2,1,W,OT,17,9,2,W 1,16091,2:30
+29,2024-12-12,0,Anaheim Ducks,3,2,W,no,18,9,2,W 2,18688,2:23
+30,2024-12-14,1,Detroit Red Wings,2,4,L,no,18,10,2,L 1,19515,2:23
+31,2024-12-15,0,Buffalo Sabres,5,3,W,no,19,10,2,W 1,18588,2:34
+32,2024-12-18,1,Dallas Stars,5,3,W,no,20,10,2,W 2,18532,2:30
+33,2024-12-20,1,Buffalo Sabres,6,3,W,no,21,10,2,W 3,18267,2:28
+34,2024-12-21,0,New York Islanders,3,6,L,no,21,11,2,L 1,18912,2:21
+35,2024-12-23,0,Winnipeg Jets,2,5,L,no,21,12,2,L 2,18923,2:28
+36,2024-12-27,1,Detroit Red Wings,5,2,W,no,22,12,2,W 1,19515,2:20
+37,2024-12-28,0,Washington Capitals,2,5,L,no,22,13,2,L 1,19125,2:22
+38,2024-12-31,0,New York Islanders,3,1,W,no,23,13,2,W 1,18933,2:29
+39,2025-01-02,1,New York Islanders,2,1,W,no,24,13,2,W 2,17255,2:27
+40,2025-01-04,0,Boston Bruins,6,4,W,no,25,13,2,W 3,18996,2:31
+41,2025-01-05,0,Philadelphia Flyers,3,2,W,OT,26,13,2,W 4,18554,2:32
+42,2025-01-07,1,Philadelphia Flyers,3,2,W,no,27,13,2,W 5,18058,2:32
+43,2025-01-09,1,Carolina Hurricanes,3,6,L,no,27,14,2,L 1,18750,2:26
+44,2025-01-11,0,Vancouver Canucks,0,3,L,no,27,15,2,L 2,19104,2:18
+45,2025-01-14,0,Dallas Stars,1,4,L,no,27,16,2,L 3,18535,2:22
+46,2025-01-16,0,New Jersey Devils,4,3,W,OT,28,16,2,W 1,18577,2:35
+47,2025-01-18,1,Montreal Canadiens,7,3,W,no,29,16,2,W 2,21105,2:39
+48,2025-01-20,0,Tampa Bay Lightning,5,3,W,no,30,16,2,W 3,19123,2:33
+49,2025-01-22,0,Columbus Blue Jackets,1,5,L,no,30,17,2,L 1,18459,2:25
+50,2025-01-25,1,Ottawa Senators,1,2,L,no,30,18,2,L 2,18818,2:28
+51,2025-01-29,0,Minnesota Wild,1,3,L,no,30,19,2,L 3,18544,2:22
+52,2025-02-01,1,Edmonton Oilers,4,3,W,no,31,19,2,W 1,18347,2:28
+53,2025-02-04,1,Calgary Flames,6,3,W,no,32,19,2,W 2,18769,2:48
+54,2025-02-06,1,Seattle Kraken,3,1,W,no,33,19,2,W 3,17151,2:36
+55,2025-02-08,1,Vancouver Canucks,1,2,L,no,33,20,2,L 1,19022,2:19
+56,2025-02-22,0,Carolina Hurricanes,6,3,W,no,34,20,2,W 1,18914,2:36
+57,2025-02-23,1,Chicago Blackhawks,5,2,W,no,35,20,2,W 2,19199,2:27
+58,2025-02-25,1,Boston Bruins,5,4,W,OT,36,20,2,W 3,17850,2:42
+59,2025-02-28,1,New York Rangers,3,2,W,no,37,20,2,W 4,18006,2:33
+60,2025-03-02,1,Pittsburgh Penguins,6,5,W,OT,38,20,2,W 5,16284,2:26
+61,2025-03-03,0,San Jose Sharks,2,3,L,SO,38,20,3,L 1,18884,2:43
+62,2025-03-05,1,Vegas Golden Knights,2,5,L,no,38,21,3,L 2,17769,2:33
+63,2025-03-08,1,Colorado Avalanche,4,7,L,no,38,22,3,L 3,18094,2:28
+64,2025-03-10,1,Utah Hockey Club,4,3,W,SO,39,22,3,W 1,11131,2:50
+65,2025-03-13,0,Florida Panthers,2,3,L,no,39,23,3,L 1,19201,2:32
+66,2025-03-15,0,Ottawa Senators,2,4,L,no,39,24,3,L 2,19170,2:33
+67,2025-03-17,0,Calgary Flames,6,2,W,no,40,24,3,W 1,19033,2:35
+68,2025-03-19,0,Colorado Avalanche,2,1,W,no,41,24,3,W 2,18731,2:28
+69,2025-03-20,1,New York Rangers,4,3,W,no,42,24,3,W 3,17235,2:28
+70,2025-03-22,1,Nashville Predators,2,5,L,no,42,25,3,L 1,17159,2:30
+71,2025-03-25,0,Philadelphia Flyers,7,2,W,no,43,25,3,W 1,18691,2:29
+72,2025-03-27,1,San Jose Sharks,5,6,L,SO,43,25,4,L 1,15514,2:38
+73,2025-03-29,1,Los Angeles Kings,3,1,W,no,44,25,4,W 1,18145,2:34
+74,2025-03-30,1,Anaheim Ducks,3,2,W,no,45,25,4,W 2,17174,2:29
+75,2025-04-02,0,Florida Panthers,3,2,W,no,46,25,4,W 3,19066,2:23
+76,2025-04-05,0,Columbus Blue Jackets,5,0,W,no,47,25,4,W 4,19179,2:20
+77,2025-04-08,1,Florida Panthers,1,3,L,no,47,26,4,L 1,19261,2:17
+78,2025-04-09,1,Tampa Bay Lightning,4,3,W,OT,48,26,4,W 1,19092,2:32
+79,2025-04-12,0,Montreal Canadiens,1,0,W,OT,49,26,4,W 2,19252,2:31
+80,2025-04-13,1,Carolina Hurricanes,4,1,W,no,50,26,4,W 3,18905,2:19
+81,2025-04-15,1,Buffalo Sabres,4,0,W,no,51,26,4,W 4,17160,2:27
+82,2025-04-17,0,Detroit Red Wings,4,3,W,OT,52,26,4,W 5,18605,2:17

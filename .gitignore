@@ -1,8 +1,13 @@
 __pycache__/
 *.pyc
 .env
-data/raw/*
-data/clean/*
+data/raw/oldbacktest.csv
+data/raw/save data raw.xlsx
+data/clean/backtest_with_elos.csv
+data/clean/schedule_with_elos.csv
+data/clean/schedule_with_elos_bumped.csv
+data/clean/teams_elos.csv
+
 .ipynb_checkpoints
 leafs_predictor/notes.txt
 
