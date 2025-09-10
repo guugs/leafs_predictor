@@ -5,3 +5,5 @@ data/raw/*
 data/clean/*
 .ipynb_checkpoints
 leafs_predictor/notes.txt
+
+leafs_predictor/data/notebooks/main.ipynb
