@@ -2,6 +2,8 @@
 
 This is a tool to predict the outcome of the upcoming 2025/26 season for **your Toronto Maple Leafs!**
 
+Try it out here! https://leafspredictor.streamlit.app/
+
 ![gif](https://github.com/guugs/leafs_predictor/blob/main/images/dashboarddemo.gif)
 
 ## The Basics 📕
