@@ -56,7 +56,7 @@ There are two .csv files available to download.
 
 The fun part: what did I learn?
 
-For starters, hockey is a very, very, random sport. It's part of what makes it so amazing. Unfortuantely for a project like this, that leaves a lot up to non-quantifiable fields. As I ran backtests on last seasons data, I found myself saying "well thats just ludicrous, they would never lose that game" only to check against the data and see they actually did (the leafs have a habit of that...). Furthermore, the leafs even last season were not analyitically out-of-this-world. Yet, they finished first in their division. So there's just some level of intangibles that are difficult to capture in a project like this.
+For starters, hockey is a very, very, random sport. It's part of what makes it so amazing. Unfortuantely for a project like this, that leaves a lot up to non-quantifiable fields. As I ran backtests on last seasons data, I found myself saying "well thats just ludicrous, they would never lose that game" only to check against the data and see they actually did (the leafs have a habit of that...). Furthermore, the leafs even last season were not analytically out-of-this-world. Yet, they finished first in their division. So there's just some level of intangibles that are difficult to capture in a project like this.
 
 Currently, here are features that I would like to add:
 - Further backtesting on older seasons schedules (the problem being that it requires a new elo for each team, each season due to roster changes)
